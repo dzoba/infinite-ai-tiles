@@ -68,7 +68,9 @@ export class CornerTiling {
       // Second row: 4,5,6,7 - position 5 might be it
       // Third row: 8,9,10,11 - position 11 might be it  
       // Bottom row: 12,13,14,15 - need to check
-      return 11; // Try tile 11
+      // Wait - what if tile 15 (described as all water) is actually all grass?
+      // The descriptions might be wrong
+      return 15; // Try tile 15 again
     }
     
     // For mixed tiles, find the closest match

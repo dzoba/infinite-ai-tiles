@@ -4,17 +4,13 @@ import './App.css'
 function App() {
   return (
     <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      padding: '20px',
-      minHeight: '100vh',
-      backgroundColor: '#1a1a1a'
+      margin: 0,
+      padding: 0,
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden'
     }}>
-      <h1 style={{ color: '#ffffff', marginBottom: '20px' }}>
-        Infinite Tiles with Phaser
-      </h1>
-      <GameCanvas width={800} height={600} />
+      <GameCanvas />
     </div>
   )
 }

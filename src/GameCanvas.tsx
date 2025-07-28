@@ -3,14 +3,8 @@ import Phaser from 'phaser';
 import PerlinPlugin from 'phaser3-rex-plugins/plugins/perlin-plugin.js';
 import { PreloadScene } from './scenes/PreloadScene';
 import { WorldScene } from './scenes/WorldScene';
-import { TestScene } from './scenes/TestScene';
 
-interface GameCanvasProps {
-  width?: number;
-  height?: number;
-}
-
-const GameCanvas: React.FC<GameCanvasProps> = ({ width = 800, height = 600 }) => {
+const GameCanvas: React.FC = () => {
   const gameRef = useRef<Phaser.Game | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -20,10 +14,14 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ width = 800, height = 600 }) =>
     // Phaser game configuration
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
-      width,
-      height,
+      width: window.innerWidth,
+      height: window.innerHeight,
       parent: containerRef.current,
       backgroundColor: '#2c3e50',
+      scale: {
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      },
       plugins: {
         global: [
           { key: 'rexPerlin', plugin: PerlinPlugin, start: true }
@@ -45,6 +43,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ width = 800, height = 600 }) =>
     // Create the game instance
     gameRef.current = new Phaser.Game(config);
 
+    // Make game globally accessible for debugging
+    (window as any).game = gameRef.current;
+
     // Cleanup function
     return () => {
       if (gameRef.current) {
@@ -52,16 +53,17 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ width = 800, height = 600 }) =>
         gameRef.current = null;
       }
     };
-  }, [width, height]);
+  }, []);
 
   return (
     <div 
       ref={containerRef} 
       style={{ 
-        width: `${width}px`, 
-        height: `${height}px`,
-        border: '2px solid #34495e',
-        borderRadius: '8px'
+        width: '100%',
+        height: '100%',
+        margin: 0,
+        padding: 0,
+        overflow: 'hidden'
       }} 
     />
   );

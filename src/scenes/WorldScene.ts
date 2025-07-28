@@ -89,7 +89,7 @@ export class WorldScene extends Phaser.Scene {
       color: '#ffffff',
       backgroundColor: '#000000',
       padding: { x: 10, y: 5 }
-    }).setScrollFactor(0);
+    }).setScrollFactor(0).setDepth(1000);
 
     // Force initial chunk load
     this.chunkManager.update(0, 0);
