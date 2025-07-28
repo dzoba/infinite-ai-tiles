@@ -1,6 +1,6 @@
 # Infinite AI Tiles
 
-An infinite scrolling tile-based world generator with procedurally generated islands using Voronoi-based blob generation and corner-based Wang tiling for smooth terrain transitions.
+An infinite scrolling tile-based world generator with procedurally generated islands using Voronoi-based blob generation and corner-based Wang tiling for smooth terrain transitions. Tile art created with [PixelLab](https://www.pixellab.ai/).
 
 🎮 **[Play it here!](https://dzoba.github.io/infinite-ai-tiles/)**
 
