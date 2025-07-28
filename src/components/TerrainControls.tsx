@@ -149,6 +149,9 @@ const TerrainControls: React.FC<TerrainControlsProps> = ({ config, onChange }) =
         <strong>Note:</strong> Changing values will regenerate terrain.
         <br />
         You may need to move around to see changes.
+        <br />
+        <br />
+        Press <strong>H</strong> to hide/show controls
       </div>
     </div>
   );

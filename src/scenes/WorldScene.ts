@@ -67,7 +67,14 @@ export class WorldScene extends Phaser.Scene {
 
     // Set up camera
     this.cameras.main.setBounds(-10000, -10000, 20000, 20000);
-    this.cameras.main.setZoom(2);
+    
+    // Set initial zoom from URL params if available
+    const initialZoom = (window as any).initialZoom;
+    if (initialZoom) {
+      this.cameras.main.setZoom(initialZoom);
+    } else {
+      this.cameras.main.setZoom(2);
+    }
     
     // Set initial camera position from URL params if available
     const initialPos = (window as any).initialCameraPosition;
@@ -98,19 +105,30 @@ export class WorldScene extends Phaser.Scene {
 
     console.log('WorldScene: World initialization complete!');
 
-    // Clear loading text and show instructions
+    // Clear loading text
     this.children.removeAll();
-    
-    // Show instructions
-    this.add.text(10, 10, 'Use WASD or Arrow Keys to move around', {
-      fontSize: '16px',
-      color: '#ffffff',
-      backgroundColor: '#000000',
-      padding: { x: 10, y: 5 }
-    }).setScrollFactor(0).setDepth(1000);
 
-    // Force initial chunk load
-    this.chunkManager.update(0, 0);
+    // Force initial chunk load with current zoom
+    this.chunkManager.update(this.cameras.main.scrollX, this.cameras.main.scrollY, this.cameras.main.zoom);
+    
+    // Add scroll to zoom functionality
+    this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: any[], _deltaX: number, deltaY: number, _deltaZ: number) => {
+      const camera = this.cameras.main;
+      const currentZoom = camera.zoom;
+      
+      // Calculate new zoom level
+      const zoomChange = deltaY > 0 ? 0.9 : 1.1; // Scroll down = zoom out, scroll up = zoom in
+      const newZoom = Phaser.Math.Clamp(currentZoom * zoomChange, 0.5, 4); // Min zoom 0.5x, max zoom 4x
+      
+      // Simply set the zoom - this keeps the center of the screen in the center
+      camera.setZoom(newZoom);
+      
+      // Report zoom change
+      const onCameraZoom = (window as any).onCameraZoom;
+      if (onCameraZoom) {
+        onCameraZoom(newZoom);
+      }
+    });
   }
 
   // Method to update terrain configuration
@@ -156,9 +174,12 @@ export class WorldScene extends Phaser.Scene {
       this.cameras.main.scrollY += deltaY;
     }
 
-    // Update chunk manager
+    // Update chunk manager with camera center position and zoom
     if (this.chunkManager) {
-      this.chunkManager.update(this.cameras.main.scrollX, this.cameras.main.scrollY);
+      const camera = this.cameras.main;
+      const centerX = camera.scrollX + camera.width / 2 / camera.zoom;
+      const centerY = camera.scrollY + camera.height / 2 / camera.zoom;
+      this.chunkManager.update(centerX, centerY, camera.zoom);
     }
     
     // Report camera position changes (throttled)

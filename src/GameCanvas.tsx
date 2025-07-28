@@ -8,10 +8,12 @@ import type { TerrainConfig } from './utils/ChunkManager';
 interface GameCanvasProps {
   terrainConfig?: TerrainConfig;
   initialCameraPosition?: { x: number; y: number };
+  initialZoom?: number;
   onCameraMove?: (x: number, y: number) => void;
+  onCameraZoom?: (zoom: number) => void;
 }
 
-const GameCanvas: React.FC<GameCanvasProps> = ({ terrainConfig, initialCameraPosition, onCameraMove }) => {
+const GameCanvas: React.FC<GameCanvasProps> = ({ terrainConfig, initialCameraPosition, initialZoom, onCameraMove, onCameraZoom }) => {
   const gameRef = useRef<Phaser.Game | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -66,7 +68,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ terrainConfig, initialCameraPos
     // Store terrain config and camera info globally for the scene to access
     (window as any).terrainConfig = terrainConfig;
     (window as any).initialCameraPosition = initialCameraPosition;
+    (window as any).initialZoom = initialZoom;
     (window as any).onCameraMove = onCameraMove;
+    (window as any).onCameraZoom = onCameraZoom;
 
     // Cleanup function
     return () => {

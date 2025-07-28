@@ -15,6 +15,7 @@ function App() {
     const size = params.get('size');
     const variation = params.get('variation');
     const edge = params.get('edge');
+    const zoom = params.get('zoom');
     
     return {
       seed: seed ? parseFloat(seed) : 707,
@@ -23,7 +24,8 @@ function App() {
       density: density ? parseFloat(density) : 12.1,
       size: size ? parseFloat(size) : 14,
       variation: variation ? parseFloat(variation) : 0.5,
-      edge: edge ? parseFloat(edge) : 0.2
+      edge: edge ? parseFloat(edge) : 0.2,
+      zoom: zoom ? parseFloat(zoom) : 2
     };
   };
 
@@ -38,6 +40,8 @@ function App() {
   });
   
   const [cameraPosition, setCameraPosition] = useState({ x: urlParams.x, y: urlParams.y });
+  const [cameraZoom, setCameraZoom] = useState(urlParams.zoom);
+  const [showControls, setShowControls] = useState(true);
   const urlUpdateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Update URL when terrain config changes (immediate)
@@ -55,7 +59,7 @@ function App() {
     window.history.replaceState({}, '', newUrl);
   }, [terrainConfig]);
 
-  // Update URL when camera moves (debounced)
+  // Update URL when camera moves or zooms (debounced)
   useEffect(() => {
     // Clear any existing timer
     if (urlUpdateTimerRef.current) {
@@ -72,6 +76,7 @@ function App() {
       params.set('size', terrainConfig.islandSize?.toFixed(0) || '20');
       params.set('variation', terrainConfig.islandSizeVariation?.toFixed(2) || '0.5');
       params.set('edge', terrainConfig.edgeNoise?.toFixed(2) || '0.2');
+      params.set('zoom', cameraZoom.toFixed(2));
       
       const newUrl = `${window.location.pathname}?${params.toString()}`;
       window.history.replaceState({}, '', newUrl);
@@ -82,7 +87,19 @@ function App() {
         clearTimeout(urlUpdateTimerRef.current);
       }
     };
-  }, [cameraPosition, terrainConfig]);
+  }, [cameraPosition, cameraZoom, terrainConfig]);
+
+  // Add keyboard event listener for toggling controls
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'h' || e.key === 'H') {
+        setShowControls(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keypress', handleKeyPress);
+    return () => window.removeEventListener('keypress', handleKeyPress);
+  }, []);
 
   const handleTerrainChange = useCallback((newConfig: TerrainConfig) => {
     setTerrainConfig(newConfig);
@@ -90,6 +107,10 @@ function App() {
   
   const handleCameraMove = useCallback((x: number, y: number) => {
     setCameraPosition({ x, y });
+  }, []);
+  
+  const handleCameraZoom = useCallback((zoom: number) => {
+    setCameraZoom(zoom);
   }, []);
 
   return (
@@ -104,9 +125,11 @@ function App() {
       <GameCanvas 
         terrainConfig={terrainConfig} 
         initialCameraPosition={cameraPosition}
+        initialZoom={cameraZoom}
         onCameraMove={handleCameraMove}
+        onCameraZoom={handleCameraZoom}
       />
-      <TerrainControls config={terrainConfig} onChange={handleTerrainChange} />
+      {showControls && <TerrainControls config={terrainConfig} onChange={handleTerrainChange} />}
     </div>
   )
 }

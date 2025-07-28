@@ -37,7 +37,7 @@ export interface TerrainConfig {
 export class ChunkManager {
   private chunks = new Map<string, Chunk>();
   private chunkSize = 32;
-  private loadRadius = 2;
+  private baseLoadRadius = 2;
   
   private tilemap: Phaser.Tilemaps.Tilemap;
   private tileset: Phaser.Tilemaps.Tileset;
@@ -64,13 +64,18 @@ export class ChunkManager {
     }
   }
   
-  public update(cameraX: number, cameraY: number): void {
+  public update(cameraX: number, cameraY: number, zoom: number = 1): void {
     const currentChunkX = Math.floor(cameraX / (this.chunkSize * 16)); // 16 = tile size
     const currentChunkY = Math.floor(cameraY / (this.chunkSize * 16));
     
+    // Calculate dynamic load radius based on zoom
+    // When zoomed out (zoom < 1), we need to load more chunks
+    // When zoomed in (zoom > 1), we can use the base radius
+    const loadRadius = Math.ceil(this.baseLoadRadius / zoom) + 1;
+    
     // Load chunks within radius
-    for (let x = currentChunkX - this.loadRadius; x <= currentChunkX + this.loadRadius; x++) {
-      for (let y = currentChunkY - this.loadRadius; y <= currentChunkY + this.loadRadius; y++) {
+    for (let x = currentChunkX - loadRadius; x <= currentChunkX + loadRadius; x++) {
+      for (let y = currentChunkY - loadRadius; y <= currentChunkY + loadRadius; y++) {
         const key = `${x},${y}`;
         if (!this.chunks.has(key)) {
           this.loadChunk({ x, y });
@@ -83,7 +88,7 @@ export class ChunkManager {
     this.chunks.forEach((chunk, key) => {
       const dx = Math.abs(chunk.coord.x - currentChunkX);
       const dy = Math.abs(chunk.coord.y - currentChunkY);
-      if (dx > this.loadRadius + 1 || dy > this.loadRadius + 1) {
+      if (dx > loadRadius + 1 || dy > loadRadius + 1) {
         chunksToRemove.push(key);
       }
     });
