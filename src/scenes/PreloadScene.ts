@@ -7,7 +7,9 @@ export class PreloadScene extends Phaser.Scene {
 
   preload() {
     // Load the tileset data from JSON file
-    this.load.json('tilesetData', '/tileset-water-sand-grass.json');
+    // Use base URL that works for both local dev and GitHub Pages
+    const baseUrl = import.meta.env.BASE_URL;
+    this.load.json('tilesetData', `${baseUrl}tileset-water-sand-grass.json`);
   }
   
   create() {
