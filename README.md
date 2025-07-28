@@ -1,69 +1,66 @@
-# React + TypeScript + Vite
+# Infinite AI Tiles
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An infinite scrolling tile-based world generator with procedurally generated islands using Voronoi-based blob generation and corner-based Wang tiling for smooth terrain transitions.
 
-Currently, two official plugins are available:
+🎮 **[Play it here!](https://dzoba.github.io/infinite-ai-tiles/)**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+- **Infinite World**: Explore an endless procedurally generated world
+- **Voronoi Islands**: Natural-looking blob-shaped islands (no Perlin noise!)
+- **Wang Tiling**: Smooth transitions between water, sand, and grass using corner-based tiling
+- **Real-time Controls**: Adjust terrain generation parameters on the fly
+- **URL Sharing**: Share specific world views with others via URL parameters
+- **Responsive Design**: Fullscreen canvas that adapts to any screen size
+- **Zoom Support**: Scroll to zoom in/out
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Controls
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Arrow Keys** or **WASD**: Move around the world
+- **Scroll**: Zoom in/out
+- **H**: Hide/show terrain controls
+- **Terrain Controls**: Adjust island density, size, variation, edge roughness, and seed
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+## Technical Details
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Built with:
+- React 19.1.0
+- TypeScript
+- Vite 5.x
+- Phaser.js 3.90.0
+- Custom tileset with corner-based Wang tiling
+
+The terrain generation uses:
+- Voronoi seed placement for natural island distribution
+- Dynamic chunk loading/unloading based on camera position
+- Corner-based tile selection for smooth coastlines
+- Post-processing to remove thin landmasses
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Build for GitHub Pages
+npm run build:gh-pages
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## URL Parameters
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The following parameters can be used to share specific world configurations:
+- `seed`: Random seed for world generation
+- `x`, `y`: Camera position
+- `zoom`: Zoom level
+- `density`: Island density (0.1-20)
+- `size`: Island size (10-50)
+- `variation`: Size variation (0-1)
+- `edge`: Edge roughness (0-0.5)
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Example: `https://dzoba.github.io/infinite-ai-tiles/?seed=707&x=2390&y=-930&density=12.10&size=14&variation=0.50&edge=0.20`
