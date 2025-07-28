@@ -11,9 +11,10 @@ interface GameCanvasProps {
   initialZoom?: number;
   onCameraMove?: (x: number, y: number) => void;
   onCameraZoom?: (zoom: number) => void;
+  customTilesetData?: any;
 }
 
-const GameCanvas: React.FC<GameCanvasProps> = ({ terrainConfig, initialCameraPosition, initialZoom, onCameraMove, onCameraZoom }) => {
+const GameCanvas: React.FC<GameCanvasProps> = ({ terrainConfig, initialCameraPosition, initialZoom, onCameraMove, onCameraZoom, customTilesetData }) => {
   const gameRef = useRef<Phaser.Game | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -71,6 +72,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ terrainConfig, initialCameraPos
     (window as any).initialZoom = initialZoom;
     (window as any).onCameraMove = onCameraMove;
     (window as any).onCameraZoom = onCameraZoom;
+    (window as any).customTilesetData = customTilesetData;
 
     // Cleanup function
     return () => {

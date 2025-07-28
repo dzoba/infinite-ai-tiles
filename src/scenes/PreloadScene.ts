@@ -6,10 +6,18 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   preload() {
-    // Load the tileset data from JSON file
-    // Use base URL that works for both local dev and GitHub Pages
-    const baseUrl = import.meta.env.BASE_URL;
-    this.load.json('tilesetData', `${baseUrl}tileset-water-sand-grass.json`);
+    // Check if custom tileset data is available
+    const customTilesetData = (window as any).customTilesetData;
+    
+    if (customTilesetData) {
+      // Use custom tileset data directly
+      this.cache.json.add('tilesetData', customTilesetData);
+    } else {
+      // Load the default tileset data from JSON file
+      // Use base URL that works for both local dev and GitHub Pages
+      const baseUrl = import.meta.env.BASE_URL;
+      this.load.json('tilesetData', `${baseUrl}tileset-water-sand-grass.json`);
+    }
   }
   
   create() {

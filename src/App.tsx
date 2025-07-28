@@ -42,6 +42,8 @@ function App() {
   const [cameraPosition, setCameraPosition] = useState({ x: urlParams.x, y: urlParams.y });
   const [cameraZoom, setCameraZoom] = useState(urlParams.zoom);
   const [showControls, setShowControls] = useState(true);
+  const [customTilesetData, setCustomTilesetData] = useState<any>(null);
+  const [gameKey, setGameKey] = useState(0);
   const urlUpdateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Update URL when terrain config changes (immediate)
@@ -113,6 +115,12 @@ function App() {
     setCameraZoom(zoom);
   }, []);
 
+  const handleTilesetLoad = useCallback((tilesetData: any) => {
+    setCustomTilesetData(tilesetData);
+    // Force game reload with new tileset
+    setGameKey(prev => prev + 1);
+  }, []);
+
   return (
     <div style={{ 
       margin: 0,
@@ -123,13 +131,15 @@ function App() {
       position: 'relative'
     }}>
       <GameCanvas 
+        key={gameKey}
         terrainConfig={terrainConfig} 
         initialCameraPosition={cameraPosition}
         initialZoom={cameraZoom}
         onCameraMove={handleCameraMove}
         onCameraZoom={handleCameraZoom}
+        customTilesetData={customTilesetData}
       />
-      {showControls && <TerrainControls config={terrainConfig} onChange={handleTerrainChange} />}
+      {showControls && <TerrainControls config={terrainConfig} onChange={handleTerrainChange} onTilesetLoad={handleTilesetLoad} />}
     </div>
   )
 }

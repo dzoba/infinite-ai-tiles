@@ -1,14 +1,62 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import type { TerrainConfig } from '../utils/ChunkManager';
 
 interface TerrainControlsProps {
   config: TerrainConfig;
   onChange: (config: TerrainConfig) => void;
+  onTilesetLoad?: (tilesetData: any) => void;
 }
 
-const TerrainControls: React.FC<TerrainControlsProps> = ({ config, onChange }) => {
+const TerrainControls: React.FC<TerrainControlsProps> = ({ config, onChange, onTilesetLoad }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadStatus, setUploadStatus] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleChange = (key: keyof TerrainConfig, value: number) => {
     onChange({ ...config, [key]: value });
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.json')) {
+      setUploadStatus('Please select a JSON file');
+      return;
+    }
+
+    setIsLoading(true);
+    setUploadStatus('Loading tileset...');
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      // Validate the tileset data
+      if (!data.base64) {
+        throw new Error('Invalid tileset: missing base64 image data');
+      }
+
+      if (data.size !== 16) {
+        throw new Error('Invalid tileset: size must be 16');
+      }
+
+      setUploadStatus('Tileset loaded successfully!');
+      if (onTilesetLoad) {
+        onTilesetLoad(data);
+      }
+
+      // Clear status after 3 seconds
+      setTimeout(() => setUploadStatus(''), 3000);
+    } catch (error) {
+      setUploadStatus(`Error: ${error instanceof Error ? error.message : 'Failed to load tileset'}`);
+    } finally {
+      setIsLoading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   return (
@@ -137,6 +185,63 @@ const TerrainControls: React.FC<TerrainControlsProps> = ({ config, onChange }) =
             🎲
           </button>
         </label>
+      </div>
+
+      <div style={{ 
+        marginTop: '20px', 
+        paddingTop: '15px', 
+        borderTop: '1px solid #555'
+      }}>
+        <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Import Tileset</h4>
+        
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleFileSelect}
+          style={{ display: 'none' }}
+        />
+        
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isLoading}
+          style={{
+            width: '100%',
+            padding: '8px 16px',
+            backgroundColor: isLoading ? '#555' : '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}
+        >
+          {isLoading ? 'Loading...' : 'Choose JSON File'}
+        </button>
+
+        {uploadStatus && (
+          <div style={{
+            marginTop: '10px',
+            padding: '8px',
+            backgroundColor: uploadStatus.startsWith('Error') ? '#f44336' : '#2196F3',
+            borderRadius: '4px',
+            fontSize: '12px',
+            wordWrap: 'break-word'
+          }}>
+            {uploadStatus}
+          </div>
+        )}
+
+        <div style={{
+          marginTop: '10px',
+          fontSize: '11px',
+          color: '#aaa',
+          lineHeight: '1.4'
+        }}>
+          Upload a PixelLab tileset JSON file.
+          Must be 16 tiles (5x4 grid).
+        </div>
       </div>
 
       <div style={{ 
