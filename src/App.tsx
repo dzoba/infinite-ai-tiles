@@ -1,16 +1,112 @@
+import { useState, useCallback, useEffect, useRef } from 'react'
 import GameCanvas from './GameCanvas'
+import TerrainControls from './components/TerrainControls'
+import type { TerrainConfig } from './utils/ChunkManager'
 import './App.css'
 
 function App() {
+  // Parse URL parameters
+  const getUrlParams = () => {
+    const params = new URLSearchParams(window.location.search);
+    const seed = params.get('seed');
+    const x = params.get('x');
+    const y = params.get('y');
+    const density = params.get('density');
+    const size = params.get('size');
+    const variation = params.get('variation');
+    const edge = params.get('edge');
+    
+    return {
+      seed: seed ? parseFloat(seed) : 707,
+      x: x ? parseFloat(x) : 2390,
+      y: y ? parseFloat(y) : -930,
+      density: density ? parseFloat(density) : 12.1,
+      size: size ? parseFloat(size) : 14,
+      variation: variation ? parseFloat(variation) : 0.5,
+      edge: edge ? parseFloat(edge) : 0.2
+    };
+  };
+
+  const urlParams = getUrlParams();
+  
+  const [terrainConfig, setTerrainConfig] = useState<TerrainConfig>({
+    islandDensity: urlParams.density,
+    islandSize: urlParams.size,
+    islandSizeVariation: urlParams.variation,
+    edgeNoise: urlParams.edge,
+    seed: urlParams.seed
+  });
+  
+  const [cameraPosition, setCameraPosition] = useState({ x: urlParams.x, y: urlParams.y });
+  const urlUpdateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Update URL when terrain config changes (immediate)
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set('seed', terrainConfig.seed?.toFixed(0) || '0');
+    params.set('x', cameraPosition.x.toFixed(0));
+    params.set('y', cameraPosition.y.toFixed(0));
+    params.set('density', terrainConfig.islandDensity?.toFixed(2) || '0.3');
+    params.set('size', terrainConfig.islandSize?.toFixed(0) || '20');
+    params.set('variation', terrainConfig.islandSizeVariation?.toFixed(2) || '0.5');
+    params.set('edge', terrainConfig.edgeNoise?.toFixed(2) || '0.2');
+    
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState({}, '', newUrl);
+  }, [terrainConfig]);
+
+  // Update URL when camera moves (debounced)
+  useEffect(() => {
+    // Clear any existing timer
+    if (urlUpdateTimerRef.current) {
+      clearTimeout(urlUpdateTimerRef.current);
+    }
+    
+    // Set a new timer to update URL after movement stops
+    urlUpdateTimerRef.current = setTimeout(() => {
+      const params = new URLSearchParams();
+      params.set('seed', terrainConfig.seed?.toFixed(0) || '0');
+      params.set('x', cameraPosition.x.toFixed(0));
+      params.set('y', cameraPosition.y.toFixed(0));
+      params.set('density', terrainConfig.islandDensity?.toFixed(2) || '0.3');
+      params.set('size', terrainConfig.islandSize?.toFixed(0) || '20');
+      params.set('variation', terrainConfig.islandSizeVariation?.toFixed(2) || '0.5');
+      params.set('edge', terrainConfig.edgeNoise?.toFixed(2) || '0.2');
+      
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState({}, '', newUrl);
+    }, 500); // Update URL 500ms after movement stops
+    
+    return () => {
+      if (urlUpdateTimerRef.current) {
+        clearTimeout(urlUpdateTimerRef.current);
+      }
+    };
+  }, [cameraPosition, terrainConfig]);
+
+  const handleTerrainChange = useCallback((newConfig: TerrainConfig) => {
+    setTerrainConfig(newConfig);
+  }, []);
+  
+  const handleCameraMove = useCallback((x: number, y: number) => {
+    setCameraPosition({ x, y });
+  }, []);
+
   return (
     <div style={{ 
       margin: 0,
       padding: 0,
       width: '100%',
       height: '100%',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      position: 'relative'
     }}>
-      <GameCanvas />
+      <GameCanvas 
+        terrainConfig={terrainConfig} 
+        initialCameraPosition={cameraPosition}
+        onCameraMove={handleCameraMove}
+      />
+      <TerrainControls config={terrainConfig} onChange={handleTerrainChange} />
     </div>
   )
 }

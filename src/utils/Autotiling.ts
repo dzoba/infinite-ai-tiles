@@ -67,13 +67,6 @@ export class Autotiling {
   
   // Get tile index based on terrain type and bitmask
   static getTileIndex(terrain: TerrainType, bitmask: number): number {
-    // Base tile indices for each terrain type
-    const baseTiles = {
-      [TerrainType.WATER]: 0,
-      [TerrainType.SAND]: 5,
-      [TerrainType.GRASS]: 15
-    };
-    
     // For now, use simplified mapping
     if (terrain === TerrainType.WATER) {
       // Water uses tiles 0-4 for edges

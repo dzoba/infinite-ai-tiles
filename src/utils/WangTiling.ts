@@ -1,8 +1,10 @@
-export enum TerrainType {
-  WATER = 0,
-  SAND = 1, 
-  GRASS = 2
-}
+export const TerrainType = {
+  WATER: 0,
+  SAND: 1,
+  GRASS: 2
+} as const;
+
+export type TerrainType = typeof TerrainType[keyof typeof TerrainType];
 
 // Wang tile indices for different edge combinations
 // Each tile has 4 edges: North, East, South, West
@@ -37,10 +39,10 @@ export const WANG_TILES: Record<string, number> = {
 
 export class WangTiling {
   // Get terrain type based on noise value
-  static getTerrainFromNoise(noiseValue: number): TerrainType {
+  static getTerrainFromNoise(noiseValue: number, waterThreshold: number = -0.2): TerrainType {
     // Adjusted thresholds for more visible land
-    if (noiseValue < -0.2) return TerrainType.WATER;
-    if (noiseValue < 0.2) return TerrainType.SAND;
+    if (noiseValue < waterThreshold) return TerrainType.WATER;
+    if (noiseValue < waterThreshold + 0.4) return TerrainType.SAND;
     return TerrainType.GRASS;
   }
   

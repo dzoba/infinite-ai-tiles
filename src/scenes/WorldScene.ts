@@ -1,11 +1,15 @@
 import Phaser from 'phaser';
 import { ChunkManager } from '../utils/ChunkManager';
 
+import type { TerrainConfig } from '../utils/ChunkManager';
+
 export class WorldScene extends Phaser.Scene {
   private chunkManager?: ChunkManager;
   private tilemap?: Phaser.Tilemaps.Tilemap;
   private tileset?: Phaser.Tilemaps.Tileset;
   private tilesetData?: any;
+  private lastReportedCameraX: number = 0;
+  private lastReportedCameraY: number = 0;
 
   constructor() {
     super({ key: 'WorldScene' });
@@ -64,6 +68,13 @@ export class WorldScene extends Phaser.Scene {
     // Set up camera
     this.cameras.main.setBounds(-10000, -10000, 20000, 20000);
     this.cameras.main.setZoom(2);
+    
+    // Set initial camera position from URL params if available
+    const initialPos = (window as any).initialCameraPosition;
+    if (initialPos && initialPos.x !== 0 && initialPos.y !== 0) {
+      this.cameras.main.scrollX = initialPos.x;
+      this.cameras.main.scrollY = initialPos.y;
+    }
 
     // Enable camera controls
     const cursors = this.input.keyboard?.createCursorKeys();
@@ -75,8 +86,15 @@ export class WorldScene extends Phaser.Scene {
 
     console.log('WorldScene: Initializing chunk manager...');
 
-    // Initialize chunk manager
-    this.chunkManager = new ChunkManager(this, this.tilemap, this.tileset);
+    // Initialize chunk manager with terrain config from window or defaults
+    const terrainConfig = (window as any).terrainConfig || {
+      islandDensity: 12.1,
+      islandSize: 14,
+      islandSizeVariation: 0.5,
+      edgeNoise: 0.2,
+    };
+    
+    this.chunkManager = new ChunkManager(this, this.tilemap, this.tileset, terrainConfig);
 
     console.log('WorldScene: World initialization complete!');
 
@@ -93,6 +111,27 @@ export class WorldScene extends Phaser.Scene {
 
     // Force initial chunk load
     this.chunkManager.update(0, 0);
+  }
+
+  // Method to update terrain configuration
+  updateTerrainConfig(config: TerrainConfig) {
+    if (!this.tilemap || !this.tileset) return;
+    
+    console.log('Updating terrain config:', config);
+    
+    // Create new chunk manager with new config
+    this.chunkManager = new ChunkManager(this, this.tilemap, this.tileset, config);
+    
+    // Clear all existing tilemap layers
+    this.tilemap.layers.forEach(layer => {
+      if (layer.tilemapLayer) {
+        layer.tilemapLayer.destroy();
+      }
+    });
+    this.tilemap.layers = [];
+    
+    // Force reload at current position
+    this.chunkManager.update(this.cameras.main.scrollX, this.cameras.main.scrollY);
   }
 
   update() {
@@ -120,6 +159,21 @@ export class WorldScene extends Phaser.Scene {
     // Update chunk manager
     if (this.chunkManager) {
       this.chunkManager.update(this.cameras.main.scrollX, this.cameras.main.scrollY);
+    }
+    
+    // Report camera position changes (throttled)
+    const currentX = Math.floor(this.cameras.main.scrollX);
+    const currentY = Math.floor(this.cameras.main.scrollY);
+    
+    if (Math.abs(currentX - this.lastReportedCameraX) > 50 || 
+        Math.abs(currentY - this.lastReportedCameraY) > 50) {
+      this.lastReportedCameraX = currentX;
+      this.lastReportedCameraY = currentY;
+      
+      const onCameraMove = (window as any).onCameraMove;
+      if (onCameraMove) {
+        onCameraMove(currentX, currentY);
+      }
     }
   }
 }
