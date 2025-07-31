@@ -62,8 +62,8 @@ export class WorldScene extends Phaser.Scene {
     }
     
     console.log('Tileset loaded:', {
-      width: tileset.image.width,
-      height: tileset.image.height,
+      width: tileset.image?.source[0]?.width || 'unknown',
+      height: tileset.image?.source[0]?.height || 'unknown',
       tileWidth: tileset.tileWidth,
       tileHeight: tileset.tileHeight,
       columns: tileset.columns,
