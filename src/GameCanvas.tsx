@@ -38,6 +38,10 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ terrainConfig, initialCameraPos
       height: window.innerHeight,
       parent: containerRef.current,
       backgroundColor: '#2c3e50',
+      render: {
+        antialias: false,
+        pixelArt: true
+      },
       scale: {
         mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH

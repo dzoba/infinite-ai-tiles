@@ -167,11 +167,15 @@ export class ChunkManager {
     }
     
     // Create Phaser tilemap layer for this chunk
+    const posX = Math.floor(coord.x * this.chunkSize * 16);
+    const posY = Math.floor(coord.y * this.chunkSize * 16);
+    console.log(`Creating chunk ${chunk.getKey()} at position (${posX}, ${posY})`);
+    
     const layer = this.tilemap.createBlankLayer(
       `chunk_${chunk.getKey()}`, 
       this.tileset, 
-      coord.x * this.chunkSize * 16, 
-      coord.y * this.chunkSize * 16,
+      posX, 
+      posY,
       this.chunkSize,
       this.chunkSize,
       16, // tile width
@@ -184,6 +188,9 @@ export class ChunkManager {
         for (let y = 0; y < this.chunkSize; y++) {
           const tileData = chunk.tiles[x][y];
           if (tileData) {
+            if (tileData.tileIndex < 0 || tileData.tileIndex > 19) {
+              console.warn(`Invalid tile index ${tileData.tileIndex} at chunk ${chunk.getKey()} position (${x}, ${y})`);
+            }
             layer.putTileAt(tileData.tileIndex, x, y);
           }
         }

@@ -61,6 +61,15 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
     
+    console.log('Tileset loaded:', {
+      width: tileset.image.width,
+      height: tileset.image.height,
+      tileWidth: tileset.tileWidth,
+      tileHeight: tileset.tileHeight,
+      columns: tileset.columns,
+      total: tileset.total
+    });
+    
     this.tileset = tileset;
 
     console.log('WorldScene: Setting up camera and controls...');
@@ -177,8 +186,8 @@ export class WorldScene extends Phaser.Scene {
     // Update chunk manager with camera center position and zoom
     if (this.chunkManager) {
       const camera = this.cameras.main;
-      const centerX = camera.scrollX + camera.width / 2 / camera.zoom;
-      const centerY = camera.scrollY + camera.height / 2 / camera.zoom;
+      const centerX = Math.floor(camera.scrollX + camera.width / 2 / camera.zoom);
+      const centerY = Math.floor(camera.scrollY + camera.height / 2 / camera.zoom);
       this.chunkManager.update(centerX, centerY, camera.zoom);
     }
     
